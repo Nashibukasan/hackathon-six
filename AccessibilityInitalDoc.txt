@@ -1,0 +1,539 @@
+﻿A Strategic Plan for a Proof of Concept: Dynamic Accessibility Modelling for Public Transport
+
+
+
+
+Section 1: The Strategic Imperative: Bridging the Accessibility Data Gap in Public Transport
+
+
+This document outlines a comprehensive plan for a Proof of Concept (POC) for a transformative mobile application. The application is designed to capture the lived travel experiences of people with disabilities on the public transport network, using passive data collection and advanced artificial intelligence to generate a dynamic, real-world model of accessibility. This initiative moves beyond static compliance checks to create an empirical evidence base that can guide investment, inform policy, and empower users, directly aligning with and operationalizing the strategic accessibility goals of the Victorian Government.
+
+
+1.1 The Victorian Policy Landscape: A Mandate for Change
+
+
+The Victorian Government has established a clear and robust policy framework centered on improving transport accessibility for the 1.1 million Victorians living with a disability.1 This commitment is not a peripheral consideration but a core objective woven into the fabric of the state's transport strategy. Foundational documents, including the
+Accessible Public Transport Action Plan 2020-2024 and the recently developed Transport Accessibility Strategic Framework, explicitly call for a "whole-of-transport approach" that prioritizes "user-centered design principles" and actively listens to the "lived experiences" of passengers with disabilities.1
+The government's intent is further solidified by significant institutional investments. The appointment of a Chief Accessibility Advocate and the establishment of the Accessible Transport Advisory Committee (ATAC) signal a high level of commitment to co-design and continuous consultation with community representatives.1 These bodies are tasked with ensuring that the voices of people with disabilities are integral to the planning and execution of all transport projects. Furthermore, the government's unprecedented $100 billion investment in Victoria's Big Build, which includes new, more accessible metro trains and trams, underscores a long-term vision for a universally accessible network.1
+This POC is not conceived in a vacuum; it is a direct response to this policy mandate. The strategic framework highlights the importance of providing "clear and easy-to-understand information" at every stage of a journey and enabling passengers to have "greater choice and control" to increase their confidence and independence.3 The proposed application provides a novel mechanism to generate precisely this type of information, grounding it not in theoretical design standards but in the empirical reality of day-to-day travel.
+A critical examination of the policy landscape reveals a powerful synergy. The government has articulated clear strategic goals—such as being "user-centred" and focusing on the "whole journey" 5—but may lack the tools to measure the real-world impact of these principles. For instance, a station may be audited as "fully accessible," yet the actual time and effort required for a wheelchair user to navigate from the entrance to the platform may present a significant, unmeasured barrier. The proposed application creates a direct mechanism to quantify this user-centered experience, transforming high-level policy principles into measurable Key Performance Indicators (KPIs). By providing empirical data on the success of its own strategic framework, the POC becomes an indispensable tool for the Department of Transport and Planning (DTP), elevating its value from a consumer-facing app to a core policy evaluation instrument.
+
+
+1.2 The Current Data Paradigm: Static, Declarative, and Incomplete
+
+
+The current ecosystem of passenger information in Victoria, while sophisticated, is fundamentally based on a static and declarative data model. Information provided through the Public Transport Victoria (PTV) website, the PTV mobile app, and third-party applications is derived from data that describes the intended or designed state of the network.6
+The backbone of this system is the General Transit Feed Specification (GTFS), provided by DTP through its open data portals.7 The GTFS Schedule feed contains a wealth of static information, including timetables, stop locations, and route shapes. In recent years, this has been enhanced with specific accessibility attributes, such as the
+wheelchair_accessible flag in the trips.txt file and the wheelchair_boarding flag in the stops.txt file.8 This information allows journey planners to identify services that are theoretically accessible. For example, a user can check if the next tram is scheduled to be a low-floor model or if a station has ramp access.6 The Next Generation PTV app, developed in consultation with Vision Australia, leverages this data to provide a "fully accessible" experience for blind and low-vision users through screen reader compatibility.5
+This model is "declarative" because the transport provider declares a service, vehicle, or piece of infrastructure as accessible based on its compliance with a set of design standards, primarily the Disability Standards for Accessible Public Transport 2002 (DSAPT).9 While essential, this data represents only one part of the accessibility puzzle. It can confirm the presence of a ramp but cannot describe its steepness, condition, or whether it is frequently blocked. It can confirm the allocation of a wheelchair space on a train but cannot report on whether it is consistently occupied by luggage or other passengers. These crucial experiential details, which often determine the success or failure of a journey, remain uncaptured.
+
+
+1.3 The Opportunity: From Static Compliance to Dynamic Lived Experience
+
+
+The fundamental opportunity for this POC is to create a new data paradigm that bridges the profound gap between designed accessibility and lived accessibility. It proposes a paradigm shift from a top-down, compliance-driven model focused on meeting the minimum requirements of the DSAPT 10, to a bottom-up, data-driven model that captures the nuances of the "whole journey" as experienced by individuals.3
+This approach directly addresses a key finding from the government's own community consultations: the critical importance of experiential factors, such as the reliability of services and the respectful treatment by staff, in building passenger confidence.3 These are elements that can never be measured by a sensor on a vehicle or an audit of a station blueprint. They can only be inferred from the patterns of successful and unsuccessful journeys undertaken by users themselves. A history of successfully completed journeys along a specific route for a specific accessibility profile is a powerful indicator of true accessibility. Conversely, patterns of abandoned journeys, anomalous delays at specific points, or routes that are consistently avoided by certain user groups can pinpoint accessibility failures that are invisible to the current data model.
+This project, therefore, aims to create a new, invaluable data asset class for transport planning. Current planning and analysis tools, such as those offered by PTV Group, assess potential accessibility based on schedules and infrastructure data.11 They can determine how many jobs or services are reachable within a certain time from a given point. The proposed application will generate data on
+revealed accessibility—the routes that people with specific needs are actually able to use, and the real-world friction they encounter.
+This new data asset can be used to validate and calibrate existing transport models, identify "accessibility deserts" that are not apparent from static data, and allow for the prioritization of infrastructure upgrades based on demonstrated, empirical need rather than periodic audits alone. It moves the critical question for planners from "Is this stop compliant with the standards?" to "Is this stop, and the entire journey to and from it, actually usable, safe, and dignified for all our citizens?" This represents a fundamental evolution in how accessibility can be measured, managed, and improved, with the potential to reshape how investment decisions are made across the entire transport portfolio.
+
+
+Section 2: The User-Centric Foundation: Profiling and Journey Experience
+
+
+The success of this POC hinges on its ability to attract and retain a community of users who are willing to share their journey data. This requires a user-facing application that is not only functional but also trustworthy, intuitive, and respectful of the user's needs and privacy. This section details the architectural and design principles for the user profile creation, the passive tracking interface, and the critical framework for building user trust.
+
+
+2.1 Accessibility Profile Architecture: Beyond Simple Categories
+
+
+To generate meaningful and nuanced accessibility models, the user profile must capture a detailed understanding of an individual's specific needs and capabilities. A simplistic, category-based approach is insufficient. The proposed architecture is a modular, hierarchical system designed to be comprehensive without becoming overwhelming for the user.
+Level 1: Primary Mobility/Sensory Profile
+The user begins by selecting a high-level profile that best describes their circumstances. This initial selection determines the subsequent options presented, ensuring relevance and reducing cognitive load.
+* Wheelchair / Mobility Scooter User
+* Ambulatory with Difficulty (e.g., uses a cane, walker, or has limited stamina)
+* Blind / Low Vision
+* Deaf / Hard of Hearing
+* Neurodivergent (e.g., autism spectrum, anxiety disorders)
+* Travelling with an Assistance Animal 6
+Level 2: Specific Needs, Tolerances, and Preferences
+Based on the Level 1 selection, the user is presented with a curated set of detailed questions. This granularity is what will allow the system to generate highly specific accessibility insights.
+* For a Wheelchair User:
+   * Mobility Aid Dimensions: Does the user's aid require more than the standard 800 mm by 1300 mm allocated space defined in the DSAPT? 13
+   * Ramp Gradient Tolerance: Can the user independently manage ramps steeper than the 1:8 gradient for unassisted access specified in standards? 13
+   * Assistance Needs: Does the user typically require manual assistance from staff or a companion for boarding? 6
+* For a Blind / Low Vision User:
+   * Primary Navigation Aid: Reliance on audio announcements, tactile ground surface indicators (TGSIs), or screen reader technology.
+   * Screen Reader Usage: This flag will ensure the app's own interface is fully compatible, following the precedent set by the PTV app's collaboration with Vision Australia.5
+* For a Neurodivergent User:
+   * Sensory Sensitivities: Preference for avoiding high levels of crowding. This can be cross-referenced with real-time vehicle occupancy data available in some GTFS-R feeds.7
+   * Predictability Needs: Preference for routes with high schedule adherence and minimal unplanned changes.
+This co-design process, involving direct consultation with advocacy groups like ATAC, is non-negotiable for ensuring the profiles are accurate, respectful, and capture the most salient accessibility barriers.4
+The aggregation and anonymization of this profile data create a powerful secondary benefit. While the government knows that 1.1 million Victorians have a disability, it lacks granular data on the specific needs of the public transport-using population.1 This POC can provide DTP with unprecedented, anonymized insights, such as the percentage of low-vision users who also have ambulatory challenges, or the number of mobility aid users who require space exceeding the current DSAPT minimums. This information is invaluable for informing the design of future assets, such as the Next Generation Trams or the X'Trapolis 2.0 trains, ensuring that accessibility is truly "built-in, not bolted-on".2
+
+
+2.2 The Passive Tracking Interface: Simplicity and Control
+
+
+The core user interaction with the app during a journey must be minimal to the point of being almost invisible. The primary interface will be a simple, unambiguous mechanism to "Start Journey" and "End Journey."
+Key Design Principles:
+* Minimal Interaction: The user should not be required to interact with the app between the start and end of their trip. The application must function reliably as a passive, background process. This design principle directly addresses the known challenge that complex app interfaces are difficult to use in the dynamic and often stressful environments of public transport, such as crowded stations or inclement weather.15
+* Battery Efficiency: This is a paramount technical and usability challenge. Continuous high-frequency GPS and sensor polling will rapidly drain a smartphone's battery, creating a significant barrier to adoption. The implementation plan must prioritize battery optimization techniques. This includes using adaptive sampling rates (e.g., reducing sensor frequency when the TMD model detects a Still state) and leveraging lower-power location detection methods when high precision is not required. The challenge of battery consumption is a recurring theme in academic research on sensor-based activity recognition.16
+* Transparency and User Control: While tracking is active, a persistent, non-intrusive notification must be displayed in the device's operating system. This notification will serve three purposes:
+   1. Provide a clear, constant indicator that tracking is active.
+   2. Briefly state the purpose (e.g., "Accessibility Journey Tracking in Progress").
+   3. Offer a one-tap shortcut to stop the journey tracking immediately.
+This transparency is fundamental to building user trust and aligns with the privacy control paradigms established by major mobile operating systems like iOS and Android.17
+
+
+2.3 Building Trust: Onboarding, Consent, and Value Proposition
+
+
+User trust is the most valuable currency for a project that handles such sensitive data. The entire user experience, from the very first launch, must be engineered to build and maintain this trust.
+   * Onboarding: The first-time user experience will be a carefully crafted onboarding sequence. It will not be a simple permissions request. Instead, it will use clear, simple language and graphics to explain:
+   * The "What": The app passively records your journey to understand how you travel.
+   * The "Why": This data is aggregated and anonymized to create a real-world map of public transport accessibility, helping to direct improvements for the entire community. This frames the user as a valued contributor to a civic goal.
+   * The "How": A clear explanation of the privacy protections in place, including anonymization, data security, and the user's absolute control over their own information.
+   * Granular Consent: The application will not use a single, all-encompassing permission request. In line with modern privacy best practices, it will request permissions individually and in context. For example, it will request location access when the user first attempts to start a journey, explaining that this is needed to track the route. It will separately request access to motion sensors, explaining this is needed to determine the mode of transport. The most sensitive step—linking the accessibility profile to the journey data—will require a final, explicit, and unambiguous consent action from the user. The app will fully support modern OS-level permission controls, such as "Allow only while using the app" or "Ask every time".17
+   * Value Proposition: The core value proposition for the user is altruistic: contributing to a better transport network. The design must constantly reinforce this. While outside the scope of the initial POC, the long-term roadmap should consider features that provide direct value back to the user. This could include a personal journey diary, visualizations of their own travel patterns, or gamified elements that show their contribution to community-wide accessibility goals. This approach, where users contribute data for a greater good, has proven successful in other domains like public health and citizen science.19 This entire approach is designed to proactively avoid the pitfalls of applications that have been found to collect and share sensitive location data without clear user consent or a transparent purpose.21
+
+
+Section 3: The AI Core: Deconstructing the Journey
+
+
+This section outlines the technical architecture of the project's artificial intelligence core. This engine is responsible for the complex task of transforming raw, noisy time-series data from a user's smartphone into a structured, high-fidelity, and semantically rich representation of their public transport journey. The process involves two primary machine learning stages—Transport Mode Detection and Map Matching—which are then fused with external network data in a novel hybrid inference model.
+
+
+3.1 Transport Mode Detection (TMD) Engine
+
+
+The first and most fundamental task of the AI core is to classify segments of the user's journey into distinct transportation modes.
+   * Objective: To accurately classify raw sensor data into one of the following categories: Still (stationary), Walking, Bus, Train, or Tram. This classification provides the foundational context for the entire journey analysis.
+   * Input Data: The primary data sources will be the smartphone's built-in sensors.
+   * Global Positioning System (GPS): Provides location coordinates, speed, and altitude.
+   * Accelerometer: Measures acceleration along three axes, providing rich data on motion intensity and, critically, the unique vibration patterns characteristic of different motorized vehicles.
+   * Supplementary Sensors: Where available, the gyroscope (measuring orientation and rotation) and barometer (measuring atmospheric pressure, useful for detecting changes in elevation like entering a subway station) can be incorporated to improve model accuracy.23
+   * Methodology: The TMD engine will employ a standard, academically validated supervised machine learning pipeline.
+   1. Data Segmentation: The continuous stream of sensor data is divided into discrete, overlapping time windows. A window size of 2-5 seconds is a common starting point in the literature.23
+   2. Feature Extraction: For each time window, a vector of numerical features is computed. This is a critical step that distills the raw data into a format that a classifier can understand. Features will include:
+   * Statistical Features: Mean, standard deviation, variance, maximum, and minimum values for speed (from GPS) and acceleration magnitude.
+   * Frequency-Domain Features: A Fast Fourier Transform (FFT) is applied to the accelerometer data to analyze its frequency components. The distinct engine and track vibrations of buses, trains, and trams produce different spectral signatures.
+   * Advanced Features: For distinguishing subtle differences, such as a user waiting in a running bus (Wait mode) versus being truly stationary (Stay mode), more complex features like Sample Entropy (SampEn) can be calculated from the accelerometer data to quantify the regularity and predictability of the vibration signal.25
+   3. Classification Model: A supervised machine learning model, trained on a pre-labeled dataset of journeys, will perform the final classification.
+   * Initial POC Model: For the initial POC, a traditional machine learning model such as a Support Vector Machine (SVM) or a Random Forest will be used. These models are well-understood, computationally efficient, robust against overfitting with smaller datasets, and have demonstrated high accuracy (over 96%) in academic studies on TMD.24
+   * Advanced Roadmap Model: The long-term technical roadmap will involve migrating to a Recurrent Neural Network (RNN), specifically a Long Short-Term Memory (LSTM) network. LSTMs are a form of deep learning designed explicitly for sequential data. Their key advantage is their ability to maintain a "memory" of previous states, allowing them to use the context of the entire journey (e.g., knowing a user was just Walking towards a train station) to inform the classification of the current segment. This ability to learn long-term dependencies makes them inherently more powerful for journey analysis.27 Bidirectional LSTMs, which process the data in both forward and backward directions, are particularly promising as they can use future context to refine past classifications.27
+
+
+3.2 High-Fidelity Map Matching
+
+
+Once a journey segment has been classified as being on a bus, train, or tram, the next step is to accurately align the user's GPS trajectory with the specific route on the public transport network map.
+   * Objective: To snap a sequence of noisy GPS points to the most probable sequence of road or rail segments in the official transport network graph.
+   * Challenge: GPS data, especially in dense urban environments with "urban canyons," is inherently imprecise. A simplistic algorithm that snaps each point to its nearest road segment will frequently fail, producing nonsensical routes that jump between parallel roads or take impossible turns at intersections. A robust map-matching algorithm must consider the network's topology (how roads are connected), the logical constraints of travel (directionality), and the history of the entire trajectory.28
+   * Proposed Algorithm: The POC will implement a Hidden Markov Model (HMM) based algorithm. This is a probabilistic approach that is considered the state-of-the-art for map matching. In this model:
+   * The hidden states are the true road/rail segments the user is traversing.
+   * The observations are the noisy GPS points recorded by the phone.
+   * The algorithm calculates two key probabilities:
+   1. Observation Probability: The likelihood of observing a given GPS point if the user were on a specific candidate road segment (typically a function of the distance between the point and the segment).
+   2. Transition Probability: The likelihood of moving from one road segment to another (a function of the network connectivity and distance between the segments).
+The algorithm then uses this model (often employing the Viterbi algorithm) to find the most likely sequence of hidden states (the true path) that best explains the sequence of observed GPS points.
+      * Implementation Options:
+      * Recommended Open Source Solution: The POC will utilize FMM (Fast Map Matching), a high-performance open-source framework.30 FMM is the ideal choice for several reasons: it is implemented in C++ for maximum performance and scalability; it provides a convenient Python API for rapid development and integration; it is built on a robust HMM foundation; and it avoids the vendor lock-in and potentially prohibitive per-transaction costs of commercial APIs, which is a critical consideration for a project intended to scale to millions of data points.30
+      * Commercial Alternatives for Benchmarking: While not the primary implementation choice, commercial APIs from providers like Geoapify 32,
+HERE 34, and
+Mapbox 36 offer powerful map-matching services. These can be used during the validation phase of the POC as a benchmark to measure the performance and accuracy of the in-house FMM implementation.
+
+
+3.3 The Hybrid Inference Engine: Fusing TMD and Map Matching with GTFS-R
+
+
+The most significant technical innovation of this POC lies in the creation of a hybrid inference engine that fuses the on-device sensor analysis with external, real-time network data. This approach directly addresses the primary weakness of purely sensor-based systems.
+Academic research consistently identifies that while distinguishing between motorized and non-motorized transport is relatively easy, accurately differentiating between different motorized modes (bus, train, tram) using only accelerometer and GPS data is the most difficult challenge.37 These modes can have very similar speed profiles and vibration patterns, leading to ambiguity. The same research proposes that fusing sensor data with external transportation network information is the most promising solution.37
+The Victorian DTP provides exactly the data needed to implement this solution: the GTFS-Realtime (GTFS-R) feeds, specifically the Vehicle Positions feed.7 This feed provides the live or near-live latitude and longitude of almost every active train, tram, and bus on the network.
+The hybrid inference engine will work as follows:
+         1. The TMD model first produces a probabilistic classification for a given journey segment (e.g., 60% confidence Bus, 35% confidence Tram, 5% confidence Train).
+         2. If the confidence for a single mode is not sufficiently high (i.e., above a defined threshold), the system flags the segment as ambiguous.
+         3. For this ambiguous segment, the system queries an archived version of the GTFS-R Vehicle Positions feed for the corresponding time and geographic area.
+         4. It then compares the user's GPS trajectory with the trajectories of all public transport vehicles that were in the vicinity at that time.
+         5. If a specific vehicle's path (e.g., the Route 58 tram, trip ID Yarra-58-W-1234) shows a very high correlation with the user's path, the system can override or heavily boost the probability of the corresponding transport mode (Tram).
+This data fusion transforms the problem from one of pure physics-based inference to a more robust data-matching and disambiguation problem. It leverages the state's significant investment in real-time data infrastructure to dramatically increase the accuracy and reliability of the AI core, creating a system that is more powerful than those described in much of the existing academic literature.
+
+
+Table 3.1: Comparison of Transport Mode Detection (TMD) Models
+
+
+
+
+Model
+	Principle
+	Pros
+	Cons
+	Suitability for POC
+	Relevant Sources
+	Random Forest / SVM
+	Ensemble learning (RF) or margin maximization (SVM) using handcrafted features from sensor data.
+	- High accuracy (96%+) demonstrated in research. - Computationally efficient. - Robust with smaller training datasets. - Well-understood and interpretable.
+	- Relies heavily on quality of feature engineering. - Does not inherently model the sequential nature of a journey.
+	High. Ideal for initial validation due to speed of development and proven performance.
+	24
+	LSTM
+	Recurrent Neural Network that learns temporal dependencies in sequential data.
+	- Can capture long-term context in a journey. - Potentially higher accuracy by learning features automatically. - State-of-the-art for time-series classification.
+	- Requires large amounts of labeled training data. - Computationally intensive to train. - More complex to implement and debug ("black box").
+	Medium. A key component of the long-term roadmap, but too complex for the initial POC phase.
+	27
+	Hybrid Model (Classifier + GTFS-R)
+	Uses a base classifier (like SVM) and then applies heuristics based on external GTFS-Realtime vehicle position data to resolve ambiguities.
+	- Directly addresses the main weakness of sensor-only models (distinguishing bus/train/tram). - Leverages existing, high-quality government data. - Dramatically increases confidence and accuracy.
+	- Adds dependency on an external data feed. - Requires an archival system for GTFS-R data. - Increases system complexity.
+	High. This is the proposed architecture for the POC, as it provides a decisive accuracy advantage.
+	7
+	
+
+Section 4: The Data Ecosystem: Integration and Modelling
+
+
+The raw output of the AI Core—a series of map-matched journey segments—is only the first step. The true value of the POC is realized when this inferred data is integrated with the rich, authoritative data ecosystem provided by the Victorian Government. This process transforms individual journeys into an aggregated, structured, and queryable model of real-world network accessibility.
+
+
+4.1 Leveraging Victorian Open Data: The Ground Truth
+
+
+The foundation of the entire accessibility model is the high-quality, openly accessible transport data provided by the Department of Transport and Planning (DTP). This data is available through established portals like the Victorian Government Data Directory and the new Transport Victoria Open Data Portal, reflecting a government commitment to making data easy to "find, access, use and share".39
+         * GTFS Schedule (Static Data): This is the canonical dataset that defines the transport network's structure.8 It is the "ground truth" to which inferred journeys are matched. The POC will rely on several key components of this feed:
+         * Routes, Trips, and Stops: Defines the fundamental geometry and schedule of the network.
+         * Shapes: Provides the precise geographic paths of each route, essential for accurate map matching.
+         * Accessibility Flags: The wheelchair_accessible attribute in trips.txt and the wheelchair_boarding attribute in stops.txt are of paramount importance. They represent the official, declared accessibility of the network. The data generated by the POC will serve to validate, challenge, and add nuance to these binary flags.8
+         * In-Station Pathways: The recent addition of pathways.txt and levels.txt to the Victorian GTFS feed is a significant development. These files describe the pedestrian paths within major stations, including walkways, stairs, and lifts, and their traversal times. This allows the POC's analysis to extend beyond the platform and into the critical "first and last mile" experience within a station complex.8
+         * GTFS Realtime (Dynamic Data): The real-time feeds provide dynamic context that is crucial for interpreting journey data accurately.7
+         * Vehicle Positions: As detailed in Section 3.3, this feed is a primary input to the Hybrid Inference Engine for disambiguating transport modes.
+         * Trip Updates & Service Alerts: These feeds provide information on delays, cancellations, and other disruptions. This data is essential for contextualizing a user's journey. For example, an unusually long dwell time at a station can be explained if it correlates with a reported service delay, preventing the system from incorrectly flagging the station itself as having an accessibility issue.
+The ability of this POC to function is predicated on the continued availability and quality of these open data feeds. The project creates a powerful symbiotic relationship. It not only consumes this data but also generates a new dataset that can be used to validate and improve the government's own information. For instance, if the app collects data showing that dozens of wheelchair users successfully board a trip that is not flagged as wheelchair_accessible in the GTFS feed, it could indicate an error in the official data. This feedback loop, where crowd-sourced data enhances official data, positions the app as a collaborative data quality assurance tool, not merely a data consumer.
+
+
+4.2 The Accessibility Data Model: A New Schema for Lived Experience
+
+
+The core output of the POC is a new database that structurally represents the lived accessibility of the transport network. This requires a new data schema designed to link user profiles, network components, and performance metrics.
+         * Objective: To create a structured data warehouse that enables powerful analytical queries about the real-world performance of transport network segments for different accessibility profiles.
+         * Proposed Schema (Conceptual): The database will be structured around network segments (e.g., a specific leg of a route between two stops, or a transfer path within a station).
+         * Table: Network_Segments
+         * SegmentID (Primary Key, e.g., TrainLinePakenham_Stop123_To_Stop124)
+         * SegmentType (e.g., RouteLeg, StationTransfer)
+         * Mode (Train, Tram, Bus, Walk)
+         * OfficialAccessibility (Derived from GTFS wheelchair_accessible flags)
+         * Table: Journey_Observations
+         * ObservationID (Primary Key)
+         * SegmentID (Foreign Key to Network_Segments)
+         * ProfileID (Foreign Key to an anonymized user profile)
+         * JourneyTimestamp
+         * ObservedTravelTime (seconds)
+         * ObservedDwellTime (seconds at the start of the segment)
+         * AI_ConfidenceScore
+         * WasSuccessful (Boolean, based on anomaly detection)
+         * Analytical Power: This model allows for the aggregation of thousands of individual observations to generate powerful insights. It can answer questions that are currently impossible to address, such as:
+         * "What is the average real-world transfer time at Flinders Street Station for a mobility scooter user, and how does it compare to the official traversal_time in pathways.txt?"
+         * "Which bus routes show the highest rate of journey failure (anomalous deviations) for users who rely on audio announcements?"
+         * "Show all tram stops that are officially accessible but have an average dwell time exceeding 5 minutes for wheelchair users, suggesting a practical boarding issue."
+This data model can also quantify the impact of temporary disruptions. DTP is actively improving its data feeds for bus replacement services.8 However, the actual accessibility of these ad-hoc services is a major source of uncertainty and anxiety for passengers with disabilities. By tracking users during these disruptions, the app can provide objective data on the end-to-end replacement journey: Was the temporary bus stop findable? Was the replacement vehicle itself accessible? How much additional delay did the disruption cause for a user with specific mobility needs? This provides an empirical basis for evaluating and improving disruption management.
+
+
+4.3 Data Aggregation and Visualization (POC Deliverable)
+
+
+The ultimate deliverable of the POC is not just the raw data, but the actionable intelligence derived from it. This will be presented through an interactive dashboard designed for transport planners, accessibility advocates, and researchers.
+         * Visualizations:
+         * Accessibility Heatmap: A map of the Melbourne transport network where routes and stations are color-coded based on a calculated "Lived Accessibility Score" for a user-selectable accessibility profile. Red might indicate segments with high failure rates or excessive travel times, while green indicates smooth, reliable travel.
+         * Leaderboard Dashboards: Charts ranking the "Top 10 Most Accessible" and "Bottom 10 Least Accessible" stations or routes for specific user groups, allowing planners to pinpoint both best practices and urgent priorities.
+         * Journey Drill-Down: An analytical view that allows a planner to select a specific anonymized journey and see the raw GPS trace, the final map-matched route, the output of the TMD model for each segment, and any detected anomalies or correlations with GTFS-R service alerts.
+The target audience for this dashboard includes transport planners at DTP and PTV, advocacy groups like ATAC, academic researchers, and potentially a simplified public-facing version.44 This aligns directly with the Victorian Government's open data goals and creates a powerful tool for evidence-based decision-making and public accountability.
+
+
+Table 4.1: Key Victorian GTFS Data Fields for Accessibility Modelling
+
+
+
+
+GTFS File
+	Key Field(s)
+	Relevance to POC
+	Source(s)
+	stops.txt
+	stop_id, stop_name, stop_lat, stop_lon, wheelchair_boarding, level_id, platform_code
+	Defines all stop locations. wheelchair_boarding is the baseline official accessibility. level_id and platform_code are crucial for in-station analysis.
+	8
+	trips.txt
+	trip_id, route_id, shape_id, wheelchair_accessible, trip_headsign
+	Links journeys to specific routes and vehicle types. wheelchair_accessible is the baseline for vehicle accessibility.
+	8
+	routes.txt
+	route_id, route_long_name, route_type
+	Defines the transport mode (train, tram, bus) for each route.
+	8
+	shapes.txt
+	shape_id, shape_pt_lat, shape_pt_lon
+	Provides the precise geographic path for each route, essential for the map-matching algorithm.
+	8
+	pathways.txt
+	pathway_mode, is_bidirectional, traversal_time, from_stop_id, to_stop_id
+	Describes pedestrian paths within stations (walkways, stairs, lifts). traversal_time provides a baseline to compare against observed user times.
+	8
+	GTFS-R Vehicle Positions
+	vehicle.position, vehicle.trip.trip_id, vehicle.vehicle.id
+	Provides real-time vehicle locations, used by the Hybrid Inference Engine to disambiguate transport modes with high confidence.
+	7
+	GTFS-R Trip Updates
+	trip_update.trip.trip_id, trip_update.delay
+	Provides real-time delay information, used to contextualize journey times and avoid misinterpreting delays as accessibility issues.
+	7
+	GTFS-R Service Alerts
+	alert.informed_entity, alert.description_text
+	Provides information on network disruptions, essential for understanding anomalous journey patterns and analyzing the accessibility of replacement services.
+	7
+	
+
+Section 5: Governance and Compliance Framework
+
+
+A project of this nature, which intersects public infrastructure, sensitive personal data, and a legally protected class of citizens, requires a governance framework that is as robust and well-engineered as its technical architecture. This section outlines the critical legal, ethical, and privacy considerations that will guide the POC, ensuring it is compliant, secure, and built on a foundation of trust with all stakeholders.
+
+
+5.1 Adherence to Disability Standards (DSAPT)
+
+
+The POC operates within the legal context of the Commonwealth's Disability Standards for Accessible Public Transport 2002 (DSAPT).9 These standards, issued under the
+Disability Discrimination Act 1992, set the minimum legal requirements for accessibility on public transport conveyances, infrastructure, and premises.9
+It is critical to understand that the proposed application is not a public transport service itself and therefore is not directly regulated by the DSAPT. However, its purpose is deeply intertwined with the goals of the standards. The data generated by the POC provides, for the first time, a scalable method to measure the real-world effectiveness and practical implementation of DSAPT-compliant features. For example, while the DSAPT specifies the minimum dimensions for an allocated wheelchair space 13, the POC can gather data on whether these dimensions are sufficient for a new generation of larger mobility aids or if the space is frequently obstructed.
+The project must also remain cognizant of the ongoing reforms to the DSAPT. These reforms, driven by statutory reviews, aim to modernize the standards to better reflect the current and future needs of people with disability, with a particular focus on areas like information, communication, and wayfinding.49 The POC is perfectly aligned with this modernization agenda, as it is fundamentally a tool for providing better information—both to passengers and to transport planners. It offers a tangible way to address the recognized challenges people with disabilities face in accessing information suitable to their needs and safely navigating a complete journey.49
+
+
+5.2 Privacy by Design: A Non-Negotiable Principle
+
+
+The collection and processing of linked disability and location data represent the single greatest governance risk of this project. A single privacy failure could irrevocably damage user trust and jeopardize the entire initiative. Therefore, a "Privacy by Design" approach is not an option but a foundational, non-negotiable principle. The framework will be built on established best practices and designed to mitigate the significant risks of location tracking identified by privacy advocates and regulators.21
+Core Privacy Principles:
+         1. Data Minimization: The application will collect only the absolute minimum sensor and profile data required for the AI models to function effectively. No extraneous data will be collected.
+         2. Purpose Limitation: Data collected for the purpose of accessibility modelling will be used for that purpose exclusively. It will never be sold, shared for commercial or marketing purposes, or used for any function not explicitly stated in the user consent agreement.22
+         3. Anonymization and Aggregation: The primary output of the system is an aggregated, anonymized dataset. The link between a specific user's identity and their individual journey data is a temporary necessity for processing only. This link must be programmatically and irreversibly severed after a defined, short period.
+         4. User Control and Transparency: The user must have absolute and easy control over their data. This includes the ability to view their journey history, delete specific journeys, and permanently delete their entire account and all associated data. This mirrors the user-centric privacy controls provided by platform leaders like Apple and Google.17
+Technical Privacy Architecture:
+To operationalize these principles, the POC will implement a "data shredding" pipeline. Raw, personally identifiable journey data (the link between a user ID and a GPS trace) will be held in a secure, isolated environment for the minimum time necessary for the AI core to process it and update the aggregate model (e.g., a rolling 30-day window, similar to some Google data retention policies 17). After this period, the link between the user's profile and the journey data will be permanently destroyed. The anonymized journey observation (containing a randomized profile ID, not the user's actual ID) will then be moved to the long-term analytical data warehouse. This ensures that the long-term data asset does not contain personally identifiable location histories.
+
+
+5.3 Ethical Stakeholder Engagement
+
+
+The success and legitimacy of the POC are contingent on deep, continuous, and ethical engagement with a diverse range of stakeholders. A "build it and they will come" approach is destined to fail. A co-design methodology is essential.
+Key Stakeholder Groups:
+         * Government and Operators: The Department of Transport and Planning (DTP) and Public Transport Victoria (PTV) are the primary government partners, providing the foundational data and being the ultimate consumers of the analytical outputs.6 The public transport operators (Metro Trains, Yarra Trams, metropolitan bus companies) are also key, as the data will reflect on their services.44
+         * Disability Community and Advocacy Groups: This is the most important stakeholder group. The project must establish formal partnerships with key organizations. The Accessible Transport Advisory Committee (ATAC) is the official government-appointed body and must be a primary consultation partner.4 Other critical groups include
+Vision Australia, whose prior collaboration with PTV sets a precedent 5, and other peak bodies representing different disability communities.
+         * End Users: The individuals with disabilities who will ultimately use the app are co-designers of the project. Their direct feedback is invaluable.44
+         * Academic and Research Institutions: Universities and research centers focused on transport, accessibility, and urban planning can be valuable partners in analyzing the data and validating the methodology.44
+Engagement Strategy:
+The engagement will be proactive and begin at the earliest stage of the POC. The co-design process will be central to:
+            * Phase 1 (Profile Design): Workshops with advocacy groups and end users to design the accessibility profile architecture (Section 2.1), ensuring it is respectful, comprehensive, and captures the right information.
+            * Phase 2 (Alpha Testing): A small, trusted group of expert users recruited from partner advocacy groups will test the initial MVP, providing critical feedback on usability, clarity, and the consent process.
+            * Phase 4 (Results Dissemination): Findings will be shared transparently with all stakeholder groups, providing them with access to the dashboard to explore the data for themselves.
+
+
+Table 5.1: Data Privacy and Mitigation Strategy Matrix
+
+
+
+
+Risk ID
+	Risk Description
+	Potential Impact
+	Likelihood
+	Mitigation Strategy (Technical/Policy)
+	Responsible Role
+	Source(s)
+	PRIV-01
+	Unauthorized Data Access: A breach of the system leading to access of linked location history and disability profiles.
+	Severe: User harm, reputational damage, legal action, project termination.
+	Medium
+	Technical: End-to-end encryption, strict access controls, isolated data environments. Policy: Regular security audits, incident response plan.
+	Lead Engineer, Data Protection Officer
+	21
+	PRIV-02
+	Re-identification: Malicious actors re-identifying individuals from the "anonymized" aggregate dataset through linkage with other datasets.
+	High: Violation of user privacy, erosion of trust.
+	Low
+	Technical: Use of k-anonymity principles, differential privacy techniques, spatial and temporal aggregation to obscure individual trips.
+	Data Scientist, Privacy Engineer
+	22
+	PRIV-03
+	Lack of Informed Consent: Users providing data without fully understanding what is being collected or how it is being used.
+	High: Ethical violation, violation of privacy laws, high user churn.
+	Medium
+	Policy: Multi-step, plain-language onboarding and consent process. Granular permissions requests. Technical: UI design that prioritizes clarity over speed.
+	UX Designer, Legal Counsel
+	18
+	PRIV-04
+	Function Creep/Misuse: Data being used for purposes other than accessibility modelling, such as commercial advertising or sale to data brokers.
+	Severe: Breach of trust, legal and regulatory penalties.
+	Low
+	Policy: A strict, legally binding privacy policy explicitly forbidding data sale or use for other purposes. Technical: Data pipeline designed to prevent access from other systems.
+	Project Lead, Legal Counsel
+	22
+	PRIV-05
+	Government Surveillance: Government agencies attempting to access raw user data without a warrant, circumventing legal protections.
+	Severe: Violation of civil liberties, legal challenges, public backlash.
+	Low
+	Policy: An explicit policy statement on responding to law enforcement requests, requiring a valid warrant for any user-specific data. Regular transparency reports. Technical: "Data shredding" pipeline minimizes retention of identifiable data.
+	Legal Counsel, Project Lead
+	22
+	
+
+Section 6: Phased Proof of Concept (POC) Implementation Roadmap
+
+
+This section presents a pragmatic, actionable, and phased roadmap for the execution of the 12-month Proof of Concept. The roadmap is structured to systematically de-risk the project, moving from core technical validation in a controlled environment to a real-world beta test with end-users. Each phase has clear objectives, activities, and deliverables, providing a comprehensive project management framework.
+
+
+Phase 1: Core Technology Validation (Months 1-3)
+
+
+            * Objective: To build and validate the core AI data processing pipeline. This phase is purely technical and focused on proving that the fundamental concept of reverse-engineering a journey from sensor and network data is feasible within the Victorian context.
+            * Activities:
+            * Establish secure access to the DTP's open data feeds, specifically the GTFS Schedule and GTFS-Realtime APIs.
+            * Develop the data ingestion and archival system for these feeds. A system to store and query historical GTFS-R Vehicle Positions data is critical for the hybrid inference engine.
+            * Manually collect and label a small, high-quality dataset of test journeys across all three primary transport modes (train, tram, bus). This initial dataset will be used to train the first version of the TMD model.
+            * Implement the chosen TMD classification model (e.g., SVM) and train it on the labeled dataset.
+            * Integrate the FMM open-source map-matching library 31 and configure it with the Victorian road and rail network data derived from GTFS Schedule
+shapes.txt.
+            * Build the initial version of the Hybrid Inference Engine, developing the logic that fuses the TMD output with the archived GTFS-R data to resolve ambiguities.
+               * Deliverable: A functional backend system, demonstrable via a command-line interface or simple test script, that can accept a raw journey file (e.g., GPX or CSV) and output a structured, map-matched journey with classified transport modes. An internal report will document the initial accuracy metrics of the TMD and map-matching components.
+
+
+Phase 2: Alpha Release & Co-Design (Months 4-5)
+
+
+               * Objective: To develop a Minimum Viable Product (MVP) of the mobile application and validate its usability, clarity, and the design of the accessibility profiles with a small group of expert users.
+               * Activities:
+               * Develop the cross-platform (iOS and Android) mobile application front-end, focusing on the user profiling (Section 2.1), the simple "Start/End Journey" interface (Section 2.2), and the onboarding and consent workflow (Section 2.3).
+               * Integrate the front-end application with the backend AI pipeline developed in Phase 1.
+               * Formalize engagement with key stakeholder groups, primarily the Accessible Transport Advisory Committee (ATAC) 4 and other partner advocacy organizations like Vision Australia.5
+               * Recruit a small, dedicated group of 10-20 alpha testers from these partner organizations. This group should represent a diverse range of accessibility needs.
+               * Conduct structured co-design workshops and user acceptance testing (UAT) sessions to gather qualitative feedback on the entire user experience, from the clarity of the onboarding process to the intuitiveness of the journey tracking.
+               * Deliverable: A functional MVP application deployed to the controlled alpha test group via platforms like TestFlight (iOS) and Google Play Internal Testing (Android). A comprehensive User Feedback Report summarizing findings from the co-design workshops and UAT, including a prioritized list of required revisions to the UI/UX and profile architecture.
+
+
+Phase 3: Beta Release & Model Training (Months 6-9)
+
+
+               * Objective: To expand the user base to generate the first large-scale dataset required to train the full accessibility model and refine the AI core with real-world, diverse data.
+               * Activities:
+               * Incorporate the feedback from the Alpha phase into the mobile application, producing a more polished and robust Beta version.
+               * Launch a wider recruitment campaign for beta testers, aiming for a cohort of 100-200 users. Recruitment will be conducted primarily through the established advocacy group networks to ensure participants are from the target demographic.
+               * Run the live data collection period for a sustained duration of at least two months. This is crucial to capture a wide variety of journeys, including different times of day, weekdays and weekends, and to increase the likelihood of capturing data during service disruptions.
+               * The AI pipeline will run continuously on the incoming data. The new, larger dataset will be used to retrain and validate the TMD and map-matching models, improving their accuracy and robustness.
+               * Begin populating the Accessibility Data Model database (as defined in Section 4.2) with the processed and anonymized journey observations.
+               * Deliverable: The first version of the crowd-sourced accessibility database, containing thousands of anonymized journey observations. A report detailing the performance of the refined AI pipeline on the large-scale, real-world dataset.
+
+
+Phase 4: Analysis, Visualization, and Final Reporting (Months 10-12)
+
+
+               * Objective: To analyze the data collected during the Beta phase, develop the interactive visualization dashboard, and produce the final POC report with strategic recommendations.
+               * Activities:
+               * Perform an in-depth data science analysis of the accessibility database to identify key patterns, insights, and anomalies. This includes querying the data to answer the types of analytical questions outlined in Section 4.2.
+               * Develop the prototype of the interactive data dashboard (as described in Section 4.3). This will be a web-based tool designed for transport planners and other stakeholders.
+               * Synthesize all findings from the technical development, user feedback, and data analysis into the comprehensive final POC report. This report will detail the project's methodology, results, challenges encountered, and provide a clear, evidence-based recommendation on the viability and strategic value of a full-scale launch.
+               * Prepare and deliver a final presentation and demonstration of the dashboard to the key project stakeholders, including DTP, PTV, and ATAC.
+               * Deliverable: The Final Proof of Concept Report. A live, interactive Data Dashboard prototype. A strategic presentation outlining the key findings and recommendations for next steps, including a high-level plan and budget estimate for a production-level system.
+
+
+Table 6.1: Detailed Phased POC Roadmap
+
+
+Phase
+	Month
+	Key Activities
+	Technical Deliverables
+	Governance/Engagement Actions
+	Success Metrics/KPIs
+	Potential Risks
+	1. Tech Validation
+	1-3
+	GTFS data ingestion, AI model training (TMD), FMM map-matching implementation, Hybrid inference logic development.
+	Functional backend pipeline, Initial accuracy metrics report.
+	Establish data sharing agreement with DTP. Draft Privacy Impact Assessment.
+	TMD accuracy >85% on test data. Successful map-matching of 90% of test journeys.
+	GTFS API access delays. Difficulty in collecting a clean initial training dataset.
+	2. Alpha & Co-Design
+	4-5
+	MVP app development (UI/UX), Backend integration, Alpha tester recruitment.
+	MVP app for iOS/Android on test platforms, User Feedback Report.
+	Formalize partnerships with ATAC and advocacy groups. Conduct co-design workshops. Finalize Privacy Policy and T&Cs.
+	Positive qualitative feedback from >80% of alpha testers. Successful data collection from all testers.
+	Recruitment of diverse alpha testers is challenging. Critical usability flaws identified.
+	3. Beta & Training
+	6-9
+	Beta app release, Wider user recruitment (100-200 users), Sustained data collection (2+ months), AI model retraining.
+	Refined AI models, Populated accessibility database (v1.0).
+	Regular communication with beta testers. Monitor for privacy/security issues.
+	>100 active beta users. >5,000 anonymized journey observations collected. AI model accuracy improves with new data.
+	Low user adoption/retention in beta. High battery drain reported by users. Insufficient data variety.
+	4. Analysis & Reporting
+	10-12
+	In-depth data analysis, Dashboard development, Final report writing, Stakeholder presentation preparation.
+	Final POC Report, Interactive Data Dashboard prototype.
+	Present findings to DTP, PTV, ATAC. Develop public communication plan.
+	Identification of at least 5 novel, actionable accessibility insights. Positive stakeholder reception of dashboard.
+	Data analysis reveals no significant insights. Technical difficulties in building the dashboard.
+	Works cited
+               1. Improving transport accessibility | vic.gov.au, accessed on August 5, 2025, https://www.vic.gov.au/improving-transport-accessibility
+               2. Transport Accessibility Strategic Framework | vic.gov.au - Victorian Government, accessed on August 5, 2025, https://www.vic.gov.au/transport-accessibility-strategy
+               3. Transport Accessibility Strategic Framework - Engage Victoria, accessed on August 5, 2025, https://engage.vic.gov.au/transport-accessibility-strategy
+               4. Improving accessibility in public transport | vic.gov.au - Victorian Government, accessed on August 5, 2025, https://www.vic.gov.au/improving-accessibility-public-transport?misdirected=1
+               5. Case Study: Next Generation PTV Mobile Application | vic.gov.au - Victorian Government, accessed on August 5, 2025, https://www.vic.gov.au/transport-accessibility-strategic-framework/we-work-across-boundaries-achieve-outcomes/case-study-next-generation-ptv-mobile-application
+               6. Wheelchair access and mobility requirements - Public Transport Victoria - PTV, accessed on August 5, 2025, https://www.ptv.vic.gov.au/more/travelling-on-the-network/accessibility/wheelchair-access-and-mobility-requirements/
+               7. GTFS Realtime - Dataset - Victorian Government Data Directory, accessed on August 5, 2025, https://discover.data.vic.gov.au/dataset/gtfs-realtime
+               8. GTFS Schedule - Dataset - Victorian Government Data Directory, accessed on August 5, 2025, https://discover.data.vic.gov.au/dataset/gtfs-schedule
+               9. Disability Standards for Accessible Public Transport 2022 - ADCET, accessed on August 5, 2025, https://www.adcet.edu.au/resource/2598/disability-standards-for-accessible-public-transport
+               10. Public transport FAQ | Australian Human Rights Commission, accessed on August 5, 2025, https://humanrights.gov.au/our-work/disability-rights/public-transport-faq
+               11. PTV Access, accessed on August 5, 2025, https://access.ptvgroup.tech/en/accessibility-analysis
+               12. Accessibility analysis | PTV Group, accessed on August 5, 2025, https://www.ptvgroup.com/en-us/application-areas/accessibility-analysis
+               13. Disability standards for accessible public transport - Transport for NSW - NSW Government, accessed on August 5, 2025, https://www.transport.nsw.gov.au/operations/taxis-and-hire-cars-0/disability-standards-for-accessible-public-transport
+               14. GTFS Realtime - Transport Victoria Open Data Portal, accessed on August 5, 2025, https://opendata.transport.vic.gov.au/dataset/gtfs-realtime
+               15. Digital Accessibility in Transportation Apps: A Comprehensive Guide - TestDevLab, accessed on August 5, 2025, https://www.testdevlab.com/blog/digital-accessibility-in-transportation-apps
+               16. [2404.15323] Transportation mode recognition based on low-rate acceleration and location signals with an attention-based multiple-instance learning network - arXiv, accessed on August 5, 2025, https://arxiv.org/abs/2404.15323
+               17. How Google uses location information – Privacy & Terms, accessed on August 5, 2025, https://policies.google.com/technologies/location-data?hl=en-US
+               18. About privacy and Location Services in iOS, iPadOS, and watchOS - Apple Support, accessed on August 5, 2025, https://support.apple.com/en-us/102515
+               19. Applications of crowdsourcing in health: an overview - PMC, accessed on August 5, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC5840433/
+               20. Annotating Storefront Accessibility Data Using Crowdsourcing - ScholarWorks, accessed on August 5, 2025, https://scholarworks.calstate.edu/concern/publications/ff365c63w
+               21. How Mobile App Location Tracking Puts Executives and Enterprises at Risk - NowSecure, accessed on August 5, 2025, https://www.nowsecure.com/blog/2025/02/12/how-mobile-app-location-tracking-puts-executives-and-enterprises-at-risk/
+               22. Location Tracking – EPIC – Electronic Privacy Information Center, accessed on August 5, 2025, https://epic.org/issues/data-protection/location-tracking/
+               23. Transportation Mode Detection Using Learning Methods and Self-Contained Sensors: Review - MDPI, accessed on August 5, 2025, https://www.mdpi.com/1424-8220/24/22/7369
+               24. Welcome to TMD dataset - Università di Bologna, accessed on August 5, 2025, http://cs.unibo.it/projects/us-tm2017/
+               25. (PDF) Using Smart Phone Sensors to Detect Transportation Modes, accessed on August 5, 2025, https://www.researchgate.net/publication/267871997_Using_Smart_Phone_Sensors_to_Detect_Transportation_Modes
+               26. Using Smart Phone Sensors to Detect Transportation Modes - Bohrium, accessed on August 5, 2025, https://www.bohrium.com/paper-details/using-smart-phone-sensors-to-detect-transportation-modes/814683110842040320-4100
+               27. Transportation Mode Detection Using an Optimized Long Short-Term Memory Model on Multimodal Sensor Data, accessed on August 5, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC8622795/
+               28. Map Matching Algorithm and Its Application - Atlantis Press, accessed on August 5, 2025, https://www.atlantis-press.com/article/1316.pdf
+               29. Map-matching poor-quality GPS data in urban environments: The pgMapMatch package - Adam Millard-Ball, accessed on August 5, 2025, https://millardball.its.ucla.edu/wp-content/uploads/sites/22/2022/06/Millard-Ball_Hampshire_Weinberger_2019_Map-matching_preprint.pdf
+               30. Fast map matching, accessed on August 5, 2025, https://fmm-wiki.github.io/
+               31. cyang-kth/fmm: Fast map matching, an open source framework in C++ - GitHub, accessed on August 5, 2025, https://github.com/cyang-kth/fmm
+               32. Map Matching API - Snap GPS Data To Roads - Geoapify, accessed on August 5, 2025, https://www.geoapify.com/map-matching-api/
+               33. Map Matching API | Developer Documentation | Geoapify, accessed on August 5, 2025, https://apidocs.geoapify.com/docs/map-matching/
+               34. HERE REST APIs | Portable APIs for Maps, Routing and More - HERE Technologies, accessed on August 5, 2025, https://www.here.com/developer/rest-apis
+               35. HERE Public Transit API - Developer Guide, accessed on August 5, 2025, https://www.here.com/docs/bundle/public-transit-api-developer-guide/page/README.html
+               36. Map Matching API | API Docs - Mapbox Documentation, accessed on August 5, 2025, https://docs.mapbox.com/api/navigation/map-matching/
+               37. Transportation Mode Detection using Mobile Phones and GIS Information - ResearchGate, accessed on August 5, 2025, https://www.researchgate.net/publication/221589596_Transportation_Mode_Detection_using_Mobile_Phones_and_GIS_Information
+               38. GTFS-R Open Data Open Data Technical Technical Documentation Documentation Documentation - VicRoads, accessed on August 5, 2025, https://vicroadsopendatastorehouse.vicroads.vic.gov.au/opendata/GTFS-Realtime/GTFS-R%20Technical%20Feed%20Specification.pdf
+               39. Department of Transport and Planning, accessed on August 5, 2025, https://vicroadsopendata-vicroadsmaps.opendata.arcgis.com/
+               40. Discover and access Victorian Government open data | data.vic.gov.au, accessed on August 5, 2025, https://www.data.vic.gov.au/
+               41. Home - Open Data - Transport Victoria, accessed on August 5, 2025, https://opendata.transport.vic.gov.au/
+               42. GTFS - Wikipedia, accessed on August 5, 2025, https://en.wikipedia.org/wiki/GTFS
+               43. Public Transport Data Program - Transport Victoria, accessed on August 5, 2025, https://transport.vic.gov.au/news-and-resources/news/public-transport-data-program
+               44. Identifying key stakeholders for government transportation departments - The Jambo Blog, accessed on August 5, 2025, https://blog.jambo.cloud/stakeholders-for-government-transportation
+               45. Examining Transit Accessibility By the Numbers in St. Louis | UrbanFootprint, accessed on August 5, 2025, https://urbanfootprint.com/blog/sustainable-cities/examining-transit-accessibility-by-the-numbers-in-st-louis/
+               46. Disability Standards for Accessible Public Transport 2002 - Federal Register of Legislation, accessed on August 5, 2025, https://www.legislation.gov.au/Details/F2011C00213
+               47. Disability Standards for Accessible Public Transport 2002, accessed on August 5, 2025, https://www.accessibletourism.org/resources/14_disability-standards-for-accessible-public_en-2.pdf
+               48. Disability Standards for Accessible Public Transport ... - Transport WA, accessed on August 5, 2025, https://www.transport.wa.gov.au/getmedia/6D994BA7-38D1-42A5-8C32-C33609C9CE4E/ODT_P_Disability_Standards_Accessible_Public_Transport_2002.pdf
+               49. Disability Standards for Accessible Public Transport 2002 (Transport Standards): Stage 2 Reforms | The Office of Impact Analysis, accessed on August 5, 2025, https://oia.pmc.gov.au/published-impact-analyses-and-reports/disability-standards-accessible-public-transport-2002-0
+               50. 2022 Review of the Transport Standards, accessed on August 5, 2025, https://www.infrastructure.gov.au/infrastructure-transport-vehicles/transport-accessibility/reviews-disability-standards-accessible-public-transport-2002-transport-standards/2022-review-transport-standards
+               51. Reform of the Disability Standards for Accessible Public Transport 2002—Summary of decision—March 2024, accessed on August 5, 2025, https://www.infrastructure.gov.au/sites/default/files/documents/reform-of-the-disability-standards-for-accessible-public-transport-2002-summary-of-decision-march2024_0.pdf
+               52. Location trackers pose privacy concerns - Allstate Identity Protection, accessed on August 5, 2025, https://www.allstateidentityprotection.com/content-hub/location-tracking-poses-serious-privacy-concerns
+               53. Identifying and Understanding Stakeholders in Public Transportation - Borealis Software, accessed on August 5, 2025, https://www.boreal-is.com/blog/stakeholders-in-transportation/

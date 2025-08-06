@@ -107,10 +107,10 @@ export default function AboutPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link 
-                    href="/onboarding"
+                    href="/register"
                     className="inline-flex items-center justify-center px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
                   >
-                    Start Tracking
+                    Get Started
                   </Link>
                   <Link 
                     href="/register"

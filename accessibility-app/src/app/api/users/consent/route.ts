@@ -20,17 +20,11 @@ export async function POST(request: NextRequest) {
     const userId = `user_${Date.now()}`;
     
     // Check if user exists
-    const existingUser = db.getUserById(userId);
+    const existingUser = await db.getUserById(userId);
 
     if (existingUser) {
       // Update existing user's consent settings
-      // Note: This would need a new method in the database class
-      // For now, we'll create a new user
-      const updatedUser = {
-        ...existingUser,
-        consent_settings: consent_settings
-      };
-      // This is a simplified approach - in a real app, you'd have an update method
+      db.updateUserConsent(userId, consent_settings);
     } else {
       // Create new user with consent settings
       const newUser = {
@@ -73,7 +67,7 @@ export async function GET(request: NextRequest) {
     }
 
     const db = getDatabase();
-    const user = db.getUserById(userId);
+    const user = await db.getUserById(userId);
 
     if (!user) {
       return NextResponse.json(

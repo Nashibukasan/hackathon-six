@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
     
     const db = getDatabase();
-    const journeys = db.getJourneysByUserId(userId);
+    const journeys = await db.getJourneysByUserId(userId);
     
     const response: ApiResponse<Journey[]> = {
       success: true,
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     const db = getDatabase();
     
     // Check if user exists
-    const user = db.getUserById(body.user_id);
+    const user = await db.getUserById(body.user_id);
     if (!user) {
       const response: ApiResponse<null> = {
         success: false,

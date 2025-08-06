@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { UserProvider } from "@/contexts/UserContext";
+import ClientUserHeader from "@/components/ClientUserHeader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,7 +30,10 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased bg-gray-50 text-gray-900 min-h-screen`}>
         <div id="root" className="min-h-screen">
-          {children}
+          <UserProvider>
+            <ClientUserHeader />
+            {children}
+          </UserProvider>
         </div>
       </body>
     </html>

@@ -72,7 +72,10 @@ def train_model(samples: int = 1000, force_retrain: bool = False):
         return True
         
     except Exception as e:
+        import traceback
         print(f"Training failed: {e}")
+        print("Full traceback:")
+        traceback.print_exc()
         return False
 
 

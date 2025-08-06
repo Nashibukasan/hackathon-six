@@ -84,6 +84,9 @@ class TransportModeDetector:
         X = pd.DataFrame(features_list)
         y = np.array(labels)
         
+        # Handle NaN values in features
+        X = X.fillna(0.0)
+        
         # Store feature names
         self.feature_names = X.columns.tolist()
         
@@ -107,6 +110,9 @@ class TransportModeDetector:
             n_jobs=-1
         )
         
+        print(f"Training with {len(X_train_scaled)} samples, {len(self.feature_names)} features")
+        print(f"Feature names: {self.feature_names[:5]}...")  # Show first 5 features
+        
         self.model.fit(X_train_scaled, y_train)
         
         # Evaluate model
@@ -126,10 +132,11 @@ class TransportModeDetector:
             'feature_importance': dict(zip(self.feature_names, self.model.feature_importances_))
         }
         
+        # Set trained flag before saving
+        self.is_trained = True
+        
         # Save model
         self.save_model()
-        
-        self.is_trained = True
         
         print(f"Model training completed. Accuracy: {accuracy:.3f}")
         print(f"Cross-validation score: {cv_scores.mean():.3f} (+/- {cv_scores.std() * 2:.3f})")

@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/database';
-import { User, ApiResponse } from '@/types';
+import { ApiResponse } from '@/types';
 
-// GET /api/users/[id] - Get user by ID
+// GET /api/users/[id] - Get user by email or ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
   try {
+    const userId = decodeURIComponent(params.id);
     const db = getDatabase();
-    const user = db.getUserById(id);
+    
+    // First try to find user by email
+    let user = await db.getUserByEmail(userId);
+    
+    // If not found by email, try by ID
+    if (!user) {
+      user = await db.getUserById(userId);
+    }
     
     if (!user) {
       const response: ApiResponse<null> = {
@@ -20,7 +27,7 @@ export async function GET(
       return NextResponse.json(response, { status: 404 });
     }
     
-    const response: ApiResponse<User> = {
+    const response: ApiResponse<any> = {
       success: true,
       data: user
     };
@@ -47,7 +54,7 @@ export async function PUT(
     const db = getDatabase();
     
     // Check if user exists
-    const existingUser = db.getUserById(id);
+    const existingUser = await db.getUserById(id);
     if (!existingUser) {
       const response: ApiResponse<null> = {
         success: false,
@@ -59,7 +66,7 @@ export async function PUT(
     // For now, return success - in a full implementation, we'd update the user
     // This would require adding update methods to the database class
     
-    const response: ApiResponse<User> = {
+    const response: ApiResponse<any> = {
       success: true,
       data: existingUser
     };
@@ -85,7 +92,7 @@ export async function DELETE(
     const db = getDatabase();
     
     // Check if user exists
-    const existingUser = db.getUserById(id);
+    const existingUser = await db.getUserById(id);
     if (!existingUser) {
       const response: ApiResponse<null> = {
         success: false,

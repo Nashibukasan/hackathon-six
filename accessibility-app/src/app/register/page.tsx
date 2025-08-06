@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import UserRegistration from '@/components/UserRegistration';
+import { useUser } from '@/contexts/UserContext';
 
 interface UserRegistrationData {
   email: string;
@@ -15,6 +16,7 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { login } = useUser();
 
   const handleRegistration = async (data: UserRegistrationData) => {
     setIsSubmitting(true);
@@ -29,7 +31,10 @@ export default function RegisterPage() {
         },
         body: JSON.stringify({
           email: data.email,
-          name: data.name,
+          accessibility_profile: {
+            level1: 'ambulatory' as const,
+            level2: {}
+          },
           consent_settings: {
             location_tracking: false,
             motion_sensors: false,
@@ -45,6 +50,9 @@ export default function RegisterPage() {
       }
 
       const result = await response.json();
+      
+      // Login the user with the created account
+      await login(data.email, result.data.accessibility_profile, result.data.consent_settings);
       
       // Redirect to onboarding to set up consent and profile
       router.push('/onboarding');

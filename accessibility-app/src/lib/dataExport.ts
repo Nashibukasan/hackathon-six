@@ -64,7 +64,7 @@ class DataExportService {
       const db = getDatabase();
       
       // Get journeys for the user in the specified date range
-      const allJourneys = db.getJourneysByUserId(userId);
+      const allJourneys = await db.getJourneysByUserId(userId);
       const filteredJourneys = allJourneys.filter(journey => 
         journey.status === 'completed' &&
         new Date(journey.started_at) >= options.dateRange.start &&
@@ -344,7 +344,7 @@ Journey ${journey.journeyId || journey.journeyIdHash}:
   async exportInsightsReport(userId: string, dateRange: { start: Date; end: Date }): Promise<ExportResult> {
     try {
       const db = getDatabase();
-      const allJourneys = db.getJourneysByUserId(userId);
+      const allJourneys = await db.getJourneysByUserId(userId);
       const filteredJourneys = allJourneys.filter(journey => 
         journey.status === 'completed' &&
         new Date(journey.started_at) >= dateRange.start &&
@@ -427,7 +427,7 @@ Journey ${journey.journeyId || journey.journeyIdHash}:
   async exportTransportModeAnalysis(userId: string, dateRange: { start: Date; end: Date }): Promise<ExportResult> {
     try {
       const db = getDatabase();
-      const allJourneys = db.getJourneysByUserId(userId);
+      const allJourneys = await db.getJourneysByUserId(userId);
       const filteredJourneys = allJourneys.filter(journey => 
         journey.status === 'completed' &&
         new Date(journey.started_at) >= dateRange.start &&

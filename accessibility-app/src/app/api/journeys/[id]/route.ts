@@ -10,7 +10,7 @@ export async function GET(
   const { id } = await params;
   try {
     const db = getDatabase();
-    const journey = db.getJourneyById(id);
+    const journey = await db.getJourneyById(id);
     
     if (!journey) {
       const response: ApiResponse<null> = {
@@ -47,7 +47,7 @@ export async function PUT(
     const db = getDatabase();
     
     // Check if journey exists
-    const existingJourney = db.getJourneyById(id);
+    const existingJourney = await db.getJourneyById(id);
     if (!existingJourney) {
       const response: ApiResponse<null> = {
         success: false,
@@ -62,7 +62,7 @@ export async function PUT(
       db.updateJourneyStatus(id, body.status, ended_at);
       
       // Get updated journey
-      const updatedJourney = db.getJourneyById(id);
+      const updatedJourney = await db.getJourneyById(id);
       
       const response: ApiResponse<Journey> = {
         success: true,

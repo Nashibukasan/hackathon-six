@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { locationService } from '@/lib/locationService';
 import { LocationData, LocationError, LocationStatus } from '@/types';
+import { useUser } from '@/contexts/UserContext';
 
 interface JourneyTrackerProps {
   onJourneyStart?: (journeyId: string) => void;
@@ -24,6 +25,7 @@ interface JourneyStatus {
 }
 
 export default function JourneyTracker({ onJourneyStart, onJourneyStop }: JourneyTrackerProps) {
+  const { currentUser } = useUser();
   const [status, setStatus] = useState<JourneyStatus>({
     isTracking: false,
     journeyId: null,
@@ -144,6 +146,11 @@ export default function JourneyTracker({ onJourneyStart, onJourneyStop }: Journe
   };
 
   const handleStartJourney = async () => {
+    if (!currentUser) {
+      setError('No user logged in. Please complete onboarding first.');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -158,14 +165,17 @@ export default function JourneyTracker({ onJourneyStart, onJourneyStop }: Journe
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: 'user_1', // TODO: Get from auth context
-          start_time: new Date().toISOString(),
-          status: 'active',
+          user_id: currentUser.id,
+          metadata: {
+            start_time: new Date().toISOString(),
+            status: 'active',
+          },
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to start journey');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to start journey');
       }
 
       const data = await response.json();
@@ -201,19 +211,28 @@ export default function JourneyTracker({ onJourneyStart, onJourneyStop }: Journe
       // Stop location tracking
       locationService.stopTracking();
 
-      const response = await fetch(`/api/journeys/${status.journeyId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          end_time: new Date().toISOString(),
-          status: 'completed',
-        }),
-      });
+      // Try to update the journey in the database
+      let journeyUpdated = false;
+      try {
+        const response = await fetch(`/api/journeys/${status.journeyId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'completed',
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to stop journey');
+        if (response.ok) {
+          journeyUpdated = true;
+        } else {
+          console.warn('Journey not found in database, but continuing with local stop');
+        }
+      } catch (apiErr) {
+        console.warn('Failed to update journey in database:', apiErr);
       }
 
+      // Always update local state, even if database update failed
+      const journeyId = status.journeyId;
       setStatus(prev => ({
         ...prev,
         isTracking: false,
@@ -225,10 +244,17 @@ export default function JourneyTracker({ onJourneyStart, onJourneyStop }: Journe
         locationError: null
       }));
 
-      onJourneyStop?.(status.journeyId);
+      onJourneyStop?.(journeyId);
       
-      // Redirect to journey summary or dashboard
-      router.push(`/journeys/${status.journeyId}`);
+      // Show success message
+      if (journeyUpdated) {
+        // Redirect to dashboard to view journey summary
+        router.push('/dashboard');
+      } else {
+        // Show a message that journey was stopped locally
+        setError('Journey stopped successfully (local mode)');
+        setTimeout(() => setError(null), 3000);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to stop journey');
     } finally {
@@ -239,9 +265,9 @@ export default function JourneyTracker({ onJourneyStart, onJourneyStop }: Journe
   return (
     <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
         <h2 className="text-xl font-semibold text-white">Journey Tracker</h2>
-        <p className="text-primary-100 text-sm mt-1">
+        <p className="text-blue-100 text-sm mt-1">
           Track your accessibility journey
         </p>
       </div>
@@ -292,7 +318,7 @@ export default function JourneyTracker({ onJourneyStart, onJourneyStop }: Journe
         {status.isTracking && (
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <div className="text-center">
-              <div className="text-3xl font-mono font-bold text-primary-600">
+              <div className="text-3xl font-mono font-bold text-blue-600">
                 {formatDuration(status.duration)}
               </div>
               <div className="text-sm text-gray-500 mt-1">Duration</div>
@@ -338,8 +364,8 @@ export default function JourneyTracker({ onJourneyStart, onJourneyStop }: Journe
           {!status.isTracking ? (
             <button
               onClick={handleStartJourney}
-              disabled={isLoading}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center space-x-2"
+              disabled={isLoading || !currentUser}
+              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center space-x-2 shadow-md"
             >
               {isLoading ? (
                 <>
@@ -362,7 +388,7 @@ export default function JourneyTracker({ onJourneyStart, onJourneyStop }: Journe
             <button
               onClick={handleStopJourney}
               disabled={isLoading}
-              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center justify-center space-x-2"
+              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center justify-center space-x-2 shadow-md"
             >
               {isLoading ? (
                 <>
@@ -388,7 +414,7 @@ export default function JourneyTracker({ onJourneyStart, onJourneyStop }: Journe
             <button
               onClick={handleStopJourney}
               disabled={isLoading}
-              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm border border-gray-300"
             >
               Emergency Stop
             </button>

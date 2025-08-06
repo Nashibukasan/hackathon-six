@@ -40,7 +40,7 @@ export async function POST(
     const db = getDatabase();
     
     // Check if journey exists and is active
-    const journey = db.getJourneyById(id);
+    const journey = await db.getJourneyById(id);
     if (!journey) {
       const response: ApiResponse<null> = {
         success: false,
@@ -101,7 +101,7 @@ export async function GET(
     const db = getDatabase();
     
     // Check if journey exists
-    const journey = db.getJourneyById(id);
+    const journey = await db.getJourneyById(id);
     if (!journey) {
       const response: ApiResponse<null> = {
         success: false,
@@ -110,7 +110,7 @@ export async function GET(
       return NextResponse.json(response, { status: 404 });
     }
     
-    const locationPoints = db.getLocationPointsByJourneyId(id);
+    const locationPoints = await db.getLocationPointsByJourneyId(id);
     
     const response: ApiResponse<LocationPoint[]> = {
       success: true,

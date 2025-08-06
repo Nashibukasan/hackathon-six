@@ -116,6 +116,17 @@ class FeatureExtractor:
     
     def _extract_gyroscope_features(self, window: List[SensorData]) -> Dict[str, float]:
         """Extract features from gyroscope data."""
+        # Check if any gyroscope data is available
+        if not any(w.gyroscope_x is not None for w in window):
+            # Return default values when gyroscope data is not available
+            return {
+                'gyro_x_mean': 0.0, 'gyro_x_std': 0.0, 'gyro_x_min': 0.0, 'gyro_x_max': 0.0,
+                'gyro_y_mean': 0.0, 'gyro_y_std': 0.0, 'gyro_y_min': 0.0, 'gyro_y_max': 0.0,
+                'gyro_z_mean': 0.0, 'gyro_z_std': 0.0, 'gyro_z_min': 0.0, 'gyro_z_max': 0.0,
+                'gyro_magnitude_mean': 0.0, 'gyro_magnitude_std': 0.0, 'gyro_magnitude_min': 0.0, 'gyro_magnitude_max': 0.0,
+                'gyro_magnitude_fft_peak': 0.0, 'gyro_magnitude_fft_energy': 0.0
+            }
+        
         gyro_x = [w.gyroscope_x or 0 for w in window]
         gyro_y = [w.gyroscope_y or 0 for w in window]
         gyro_z = [w.gyroscope_z or 0 for w in window]
@@ -141,7 +152,18 @@ class FeatureExtractor:
         valid_points = [w for w in window if w.latitude is not None and w.longitude is not None]
         
         if len(valid_points) < 2:
-            return {}
+            # Return default values when GPS data is insufficient
+            return {
+                'gps_speed_mean': 0.0,
+                'gps_speed_std': 0.0,
+                'gps_speed_max': 0.0,
+                'gps_heading_mean': 0.0,
+                'gps_heading_std': 0.0,
+                'gps_distance_total': 0.0,
+                'gps_distance_mean': 0.0,
+                'gps_velocity_mean': 0.0,
+                'gps_acceleration_mean': 0.0
+            }
         
         latitudes = [w.latitude for w in valid_points]
         longitudes = [w.longitude for w in valid_points]
@@ -169,6 +191,9 @@ class FeatureExtractor:
         features = {}
         data_array = np.array(data)
         
+        # Handle NaN values by replacing with 0
+        data_array = np.nan_to_num(data_array, nan=0.0)
+        
         # Basic statistics
         features[f"{prefix}_mean"] = float(np.mean(data_array))
         features[f"{prefix}_std"] = float(np.std(data_array))
@@ -195,6 +220,9 @@ class FeatureExtractor:
         """Calculate frequency domain features."""
         if len(data) < 4:
             return {}
+        
+        # Handle NaN values by replacing with 0
+        data = [0.0 if np.isnan(x) else x for x in data]
         
         # FFT
         fft = np.fft.fft(data)

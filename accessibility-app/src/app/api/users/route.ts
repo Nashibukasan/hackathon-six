@@ -28,10 +28,13 @@ export async function GET() {
 // POST /api/users - Create a new user
 export async function POST(request: NextRequest) {
   try {
+    console.log('POST /api/users - Starting user creation');
     const body = await request.json();
+    console.log('Request body:', body);
     
     // Validate required fields
     if (!body.email || !body.accessibility_profile || !body.consent_settings) {
+      console.log('Missing required fields:', { email: !!body.email, accessibility_profile: !!body.accessibility_profile, consent_settings: !!body.consent_settings });
       const response: ApiResponse<null> = {
         success: false,
         error: 'Missing required fields: email, accessibility_profile, consent_settings'
@@ -52,7 +55,7 @@ export async function POST(request: NextRequest) {
     const db = getDatabase();
     
     // Check if user already exists
-    const existingUser = db.getUserByEmail(body.email);
+    const existingUser = await db.getUserByEmail(body.email);
     if (existingUser) {
       const response: ApiResponse<null> = {
         success: false,
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
     const userId = Math.random().toString(36).substring(2) + Date.now().toString(36);
     
     // Create user
-    const newUser = db.createUser({
+    const newUser = await db.createUser({
       id: userId,
       email: body.email,
       accessibility_profile: body.accessibility_profile,
@@ -80,9 +83,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
     console.error('Error creating user:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Failed to create user'
+      error: `Failed to create user: ${errorMessage}`
     };
     return NextResponse.json(response, { status: 500 });
   }

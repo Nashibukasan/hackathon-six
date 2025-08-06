@@ -1,12 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { journeyAnalysisService, JourneyAnalysis } from '@/lib/journeyAnalysis';
-import { getDatabase } from '@/lib/database';
-
-interface DashboardProps {
-  userId?: string;
-}
+import { useUser } from '@/contexts/UserContext';
 
 interface FilterOptions {
   dateRange: { start: Date; end: Date };
@@ -16,9 +11,30 @@ interface FilterOptions {
   showInsights: boolean;
 }
 
-export default function AccessibilityDashboard({ userId }: DashboardProps) {
-  const [journeys, setJourneys] = useState<JourneyAnalysis[]>([]);
-  const [selectedJourney, setSelectedJourney] = useState<JourneyAnalysis | null>(null);
+interface JourneyData {
+  id: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+  metadata: any;
+}
+
+interface DashboardData {
+  stats: {
+    totalJourneys: number;
+    totalDistance: number;
+    totalDuration: number;
+    avgAccessibilityScore: number;
+    anomalyCount: number;
+    insightCount: number;
+  };
+  journeys: JourneyData[];
+}
+
+export default function AccessibilityDashboard() {
+  const { currentUser } = useUser();
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [selectedJourney, setSelectedJourney] = useState<JourneyData | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     dateRange: {
       start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
@@ -30,156 +46,37 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
     showInsights: true
   });
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalJourneys: 0,
-    totalDistance: 0,
-    totalDuration: 0,
-    avgAccessibilityScore: 0,
-    anomalyCount: 0,
-    insightCount: 0
-  });
 
   useEffect(() => {
-    loadJourneys();
-  }, [userId, filters]);
-
-  useEffect(() => {
-    if (journeys.length > 0) {
-      calculateStats();
+    if (currentUser) {
+      loadDashboardData();
     }
-  }, [journeys]);
+  }, [currentUser, filters]);
 
-  const loadJourneys = async () => {
+  const loadDashboardData = async () => {
+    if (!currentUser) return;
+    
     try {
       setLoading(true);
-      const db = getDatabase();
       
-      // Get all journeys for the user and filter by date range
-      const allJourneys = db.getJourneysByUserId(userId || 'demo');
-      const journeyRows = allJourneys.filter(journey => 
-        journey.status === 'completed' &&
-        new Date(journey.started_at) >= filters.dateRange.start &&
-        new Date(journey.started_at) <= filters.dateRange.end
-      );
-
-      const journeyAnalyses: JourneyAnalysis[] = [];
+      const response = await fetch(`/api/dashboard?userId=${currentUser.id}`);
       
-      for (const journeyRow of journeyRows) {
-        try {
-          // Check if analysis data exists in metadata
-          const analysisData = journeyRow.metadata?.analysis_data;
-          if (analysisData) {
-            const locationPoints = getLocationPoints(journeyRow.id);
-            
-            journeyAnalyses.push({
-              journeyId: journeyRow.id,
-              userId: journeyRow.user_id,
-              startTime: new Date(journeyRow.started_at),
-              endTime: journeyRow.ended_at ? new Date(journeyRow.ended_at) : new Date(),
-              totalDistance: calculateTotalDistance(locationPoints),
-              totalDuration: journeyRow.ended_at ? 
-                (new Date(journeyRow.ended_at).getTime() - new Date(journeyRow.started_at).getTime()) / 1000 : 0,
-              transportSegments: getTransportSegments(journeyRow.id),
-              accessibilityScore: analysisData.accessibilityScore || 0,
-              anomalies: analysisData.anomalies || [],
-              insights: analysisData.insights || [],
-              mapMatchedRoute: []
-            });
-          } else {
-            const analysis = await journeyAnalysisService.analyzeJourney(journeyRow.id);
-            journeyAnalyses.push(analysis);
-          }
-        } catch (error) {
-          console.error(`Error loading journey ${journeyRow.id}:`, error);
-        }
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
       }
-
-      let filteredJourneys = journeyAnalyses;
       
-      if (filters.transportModes.length > 0) {
-        filteredJourneys = filteredJourneys.filter(journey =>
-          journey.transportSegments.some(segment =>
-            filters.transportModes.includes(segment.transportMode)
-          )
-        );
+      const data = await response.json();
+      
+      if (data.success) {
+        setDashboardData(data.data);
+      } else {
+        console.error('Error loading dashboard data:', data.error);
       }
-
-      filteredJourneys = filteredJourneys.filter(journey =>
-        journey.accessibilityScore >= filters.accessibilityScoreRange.min &&
-        journey.accessibilityScore <= filters.accessibilityScoreRange.max
-      );
-
-      setJourneys(filteredJourneys);
     } catch (error) {
-      console.error('Error loading journeys:', error);
+      console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const getLocationPoints = (journeyId: string) => {
-    const db = getDatabase();
-    return db.getLocationPointsByJourneyId(journeyId);
-  };
-
-  const getTransportSegments = (journeyId: string) => {
-    const db = getDatabase();
-    const segments = db.getTransportSegmentsByJourneyId(journeyId);
-    
-    return segments.map(segment => ({
-      id: segment.id,
-      startTime: new Date(segment.start_time),
-      endTime: new Date(segment.end_time),
-      transportMode: segment.transport_mode,
-      confidence: segment.confidence,
-      distance: 0, // Calculate from location points if needed
-      duration: (new Date(segment.end_time).getTime() - new Date(segment.start_time).getTime()) / 1000,
-      accessibilityScore: segment.accessibility_score || 0,
-      gtfsTripId: segment.gtfs_trip_id,
-      gtfsRouteId: undefined,
-      gtfsStopId: undefined
-    }));
-  };
-
-  const calculateTotalDistance = (points: any[]): number => {
-    let distance = 0;
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      distance += calculateDistance(prev.latitude, prev.longitude, curr.latitude, curr.longitude);
-    }
-    return distance;
-  };
-
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-
-  const calculateStats = () => {
-    const totalJourneys = journeys.length;
-    const totalDistance = journeys.reduce((sum, j) => sum + j.totalDistance, 0);
-    const totalDuration = journeys.reduce((sum, j) => sum + j.totalDuration, 0);
-    const avgAccessibilityScore = journeys.length > 0 
-      ? journeys.reduce((sum, j) => sum + j.accessibilityScore, 0) / journeys.length 
-      : 0;
-    const anomalyCount = journeys.reduce((sum, j) => sum + j.anomalies.length, 0);
-    const insightCount = journeys.reduce((sum, j) => sum + j.insights.length, 0);
-
-    setStats({
-      totalJourneys,
-      totalDistance,
-      totalDuration,
-      avgAccessibilityScore: Math.round(avgAccessibilityScore),
-      anomalyCount,
-      insightCount
-    });
   };
 
   const formatDuration = (seconds: number): string => {
@@ -216,15 +113,15 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
                 Track and analyze your transport accessibility
               </p>
             </div>
-            <div className="flex space-x-3">
-              <button
-                onClick={loadJourneys}
-                disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loading ? 'Loading...' : 'Refresh'}
-              </button>
-            </div>
+                          <div className="flex space-x-3">
+                <button
+                  onClick={loadDashboardData}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Loading...' : 'Refresh'}
+                </button>
+              </div>
           </div>
         </div>
       </div>
@@ -243,7 +140,7 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Journeys</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalJourneys}</p>
+                <p className="text-2xl font-semibold text-gray-900">{dashboardData?.stats.totalJourneys || 0}</p>
               </div>
             </div>
           </div>
@@ -259,7 +156,7 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Distance</p>
-                <p className="text-2xl font-semibold text-gray-900">{formatDistance(stats.totalDistance)}</p>
+                <p className="text-2xl font-semibold text-gray-900">{formatDistance(dashboardData?.stats.totalDistance || 0)}</p>
               </div>
             </div>
           </div>
@@ -275,7 +172,7 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Duration</p>
-                <p className="text-2xl font-semibold text-gray-900">{formatDuration(stats.totalDuration)}</p>
+                <p className="text-2xl font-semibold text-gray-900">{formatDuration(dashboardData?.stats.totalDuration || 0)}</p>
               </div>
             </div>
           </div>
@@ -291,7 +188,7 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Avg Accessibility</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.avgAccessibilityScore}/100</p>
+                <p className="text-2xl font-semibold text-gray-900">{dashboardData?.stats.avgAccessibilityScore || 0}/100</p>
               </div>
             </div>
           </div>
@@ -307,7 +204,7 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Anomalies</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.anomalyCount}</p>
+                <p className="text-2xl font-semibold text-gray-900">{dashboardData?.stats.anomalyCount || 0}</p>
               </div>
             </div>
           </div>
@@ -323,7 +220,7 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Insights</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.insightCount}</p>
+                <p className="text-2xl font-semibold text-gray-900">{dashboardData?.stats.insightCount || 0}</p>
               </div>
             </div>
           </div>
@@ -337,57 +234,37 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
                 <h3 className="text-lg font-medium text-gray-900">Journey History</h3>
               </div>
               <div className="divide-y divide-gray-200">
-                {journeys.map((journey) => (
+                {dashboardData?.journeys.map((journey) => (
                   <div
-                    key={journey.journeyId}
+                    key={journey.id}
                     className={`p-6 cursor-pointer hover:bg-gray-50 ${
-                      selectedJourney?.journeyId === journey.journeyId ? 'bg-blue-50' : ''
+                      selectedJourney?.id === journey.id ? 'bg-blue-50' : ''
                     }`}
                     onClick={() => setSelectedJourney(journey)}
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-lg font-medium text-gray-900">
-                          {journey.startTime.toLocaleDateString()} at {journey.startTime.toLocaleTimeString()}
+                          {new Date(journey.startTime).toLocaleDateString()} at {new Date(journey.startTime).toLocaleTimeString()}
                         </p>
                         <p className="text-sm text-gray-500 mt-1">
-                          {formatDistance(journey.totalDistance)} • {formatDuration(journey.totalDuration)}
+                          Journey ID: {journey.id.slice(-8)}
                         </p>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {journey.transportSegments.map((segment) => (
-                            <span
-                              key={segment.id}
-                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                            >
-                              {segment.transportMode} ({formatDuration(segment.duration)})
-                            </span>
-                          ))}
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            {journey.status}
+                          </span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            journey.accessibilityScore >= 80
-                              ? 'bg-green-100 text-green-800'
-                              : journey.accessibilityScore >= 60
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {journey.accessibilityScore}/100
+                        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                          View Details
                         </div>
-                        {journey.anomalies.length > 0 && (
-                          <div className="mt-2">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                              {journey.anomalies.length} issues
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
                 ))}
-                {journeys.length === 0 && (
+                {(!dashboardData || dashboardData.journeys.length === 0) && (
                   <div className="p-6 text-center text-gray-500">
                     No journeys found for the selected filters
                   </div>
@@ -494,43 +371,27 @@ export default function AccessibilityDashboard({ userId }: DashboardProps) {
                     <h4 className="text-sm font-medium text-gray-500">Overview</h4>
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-gray-900">
-                        Distance: {formatDistance(selectedJourney.totalDistance)}
+                        Journey ID: {selectedJourney.id}
                       </p>
                       <p className="text-sm text-gray-900">
-                        Duration: {formatDuration(selectedJourney.totalDuration)}
+                        Start Time: {new Date(selectedJourney.startTime).toLocaleString()}
                       </p>
-                      <p className={`text-sm font-medium ${getAccessibilityScoreColor(selectedJourney.accessibilityScore)}`}>
-                        Accessibility: {selectedJourney.accessibilityScore}/100
+                      <p className="text-sm text-gray-900">
+                        End Time: {selectedJourney.endTime ? new Date(selectedJourney.endTime).toLocaleString() : 'Not ended'}
+                      </p>
+                      <p className="text-sm text-gray-900">
+                        Status: {selectedJourney.status}
                       </p>
                     </div>
                   </div>
 
-                  {filters.showAnomalies && selectedJourney.anomalies.length > 0 && (
+                  {selectedJourney.metadata && Object.keys(selectedJourney.metadata).length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500">Anomalies</h4>
-                      <div className="mt-2 space-y-2">
-                        {selectedJourney.anomalies.map((anomaly, index) => (
-                          <div key={index} className="text-sm p-2 bg-red-50 rounded">
-                            <p className="text-red-800 font-medium">{anomaly.description}</p>
-                            <p className="text-xs text-red-600 mt-1">
-                              {anomaly.timestamp.toLocaleTimeString()}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {filters.showInsights && selectedJourney.insights.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500">Insights</h4>
-                      <div className="mt-2 space-y-2">
-                        {selectedJourney.insights.map((insight, index) => (
-                          <div key={index} className="text-sm p-2 bg-blue-50 rounded">
-                            <p className="text-blue-800 font-medium">{insight.title}</p>
-                            <p className="text-xs text-blue-600 mt-1">{insight.description}</p>
-                          </div>
-                        ))}
+                      <h4 className="text-sm font-medium text-gray-500">Metadata</h4>
+                      <div className="mt-2 p-2 bg-gray-50 rounded">
+                        <pre className="text-xs text-gray-700 overflow-auto">
+                          {JSON.stringify(selectedJourney.metadata, null, 2)}
+                        </pre>
                       </div>
                     </div>
                   )}

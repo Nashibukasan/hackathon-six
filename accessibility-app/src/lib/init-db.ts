@@ -11,7 +11,7 @@ export async function initializeDatabase() {
   console.log('Initializing database...');
   
   // Check if database is empty
-  const stats = db.getStats();
+  const stats = await db.getStats() as { users: number; journeys: number; locationPoints: number; transportSegments: number };
   
   if (stats.users === 0) {
     console.log('Adding sample data...');
@@ -45,7 +45,7 @@ export async function initializeDatabase() {
   }
   
   console.log('Database initialization complete');
-  console.log('Database stats:', db.getStats());
+  console.log('Database stats:', await db.getStats());
 }
 
 // Run initialization if this file is executed directly

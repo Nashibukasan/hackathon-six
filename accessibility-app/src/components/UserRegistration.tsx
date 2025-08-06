@@ -77,7 +77,7 @@ export default function UserRegistration({ onSubmit, isLoading = false }: UserRe
             id="name"
             value={formData.name}
             onChange={(e) => handleInputChange('name', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 placeholder-gray-500 ${
               errors.name ? 'border-error-300' : 'border-gray-300'
             }`}
             placeholder="Enter your full name"
@@ -101,7 +101,7 @@ export default function UserRegistration({ onSubmit, isLoading = false }: UserRe
             id="email"
             value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 placeholder-gray-500 ${
               errors.email ? 'border-error-300' : 'border-gray-300'
             }`}
             placeholder="Enter your email address"
@@ -161,7 +161,7 @@ export default function UserRegistration({ onSubmit, isLoading = false }: UserRe
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
         >
           {isLoading ? (
             <div className="flex items-center justify-center space-x-2">

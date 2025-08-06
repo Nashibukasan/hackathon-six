@@ -1,11 +1,36 @@
-import JourneyTracker from '@/components/JourneyTracker';
+'use client';
 
-export const metadata = {
-  title: 'Track Journey - Accessibility Transport Tracker',
-  description: 'Start and stop journey tracking with real-time status updates',
-};
+import JourneyTracker from '@/components/JourneyTracker';
+import { useUser } from '@/contexts/UserContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function TrackPage() {
+  const { currentUser, isLoading } = useUser();
+  const router = useRouter();
+
+  // Redirect to login if no user is logged in
+  useEffect(() => {
+    if (!isLoading && !currentUser) {
+      router.push('/login');
+    }
+  }, [currentUser, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return null; // Will redirect to login
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,6 +43,8 @@ export default function TrackPage() {
             Track your accessibility journey with real-time monitoring. 
             Start tracking when you begin your trip and stop when you reach your destination.
           </p>
+          
+          
         </div>
 
         {/* Main Content */}

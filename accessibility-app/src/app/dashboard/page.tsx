@@ -2,9 +2,23 @@
 
 import React, { useState } from 'react';
 import AccessibilityDashboard from '@/components/AccessibilityDashboard';
-import { dataExportService, ExportOptions } from '@/lib/dataExport';
+import { useUser } from '@/contexts/UserContext';
+
+interface ExportOptions {
+  format: 'csv' | 'json' | 'pdf';
+  dateRange: {
+    start: Date;
+    end: Date;
+  };
+  includePersonalData: boolean;
+  anonymizeData: boolean;
+  includeAnalysis: boolean;
+  includeAnomalies: boolean;
+  includeInsights: boolean;
+}
 
 export default function DashboardPage() {
+  const { currentUser } = useUser();
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'json',
     dateRange: {
@@ -21,24 +35,54 @@ export default function DashboardPage() {
   const [exportMessage, setExportMessage] = useState('');
 
   const handleExport = async () => {
+    if (!currentUser) {
+      setExportMessage('Please log in to export data.');
+      return;
+    }
+
     try {
       setExporting(true);
       setExportMessage('Exporting data...');
       
-      const result = await dataExportService.exportJourneyData('demo', exportOptions);
+      const response = await fetch('/api/export', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          exportOptions: {
+            ...exportOptions,
+            dateRange: {
+              start: exportOptions.dateRange.start.toISOString(),
+              end: exportOptions.dateRange.end.toISOString()
+            }
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to export data');
+      }
+
+      const result = await response.json();
       
-      // Create download link
-      const blob = new Blob([result.data], { type: result.mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = result.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      setExportMessage(`Successfully exported ${result.recordCount} records to ${result.filename}`);
+      if (result.success) {
+        // Create download link
+        const blob = new Blob([result.data.data], { type: result.data.mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = result.data.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        setExportMessage(`Successfully exported ${result.data.recordCount} records to ${result.data.filename}`);
+      } else {
+        throw new Error(result.error || 'Export failed');
+      }
     } catch (error) {
       console.error('Export error:', error);
       setExportMessage('Error exporting data. Please try again.');
@@ -47,57 +91,7 @@ export default function DashboardPage() {
     }
   };
 
-  const handleExportInsights = async () => {
-    try {
-      setExporting(true);
-      setExportMessage('Exporting insights...');
-      
-      const result = await dataExportService.exportInsightsReport('demo', exportOptions.dateRange);
-      
-      const blob = new Blob([result.data], { type: result.mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = result.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      setExportMessage(`Successfully exported insights report to ${result.filename}`);
-    } catch (error) {
-      console.error('Export insights error:', error);
-      setExportMessage('Error exporting insights. Please try again.');
-    } finally {
-      setExporting(false);
-    }
-  };
 
-  const handleExportTransportAnalysis = async () => {
-    try {
-      setExporting(true);
-      setExportMessage('Exporting transport analysis...');
-      
-      const result = await dataExportService.exportTransportModeAnalysis('demo', exportOptions.dateRange);
-      
-      const blob = new Blob([result.data], { type: result.mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = result.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      setExportMessage(`Successfully exported transport analysis to ${result.filename}`);
-    } catch (error) {
-      console.error('Export transport analysis error:', error);
-      setExportMessage('Error exporting transport analysis. Please try again.');
-    } finally {
-      setExporting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -118,20 +112,6 @@ export default function DashboardPage() {
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
               >
                 {exporting ? 'Exporting...' : 'Export Data'}
-              </button>
-              <button
-                onClick={handleExportInsights}
-                disabled={exporting}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {exporting ? 'Exporting...' : 'Export Insights'}
-              </button>
-              <button
-                onClick={handleExportTransportAnalysis}
-                disabled={exporting}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
-              >
-                {exporting ? 'Exporting...' : 'Export Transport Analysis'}
               </button>
             </div>
           </div>
@@ -243,7 +223,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Dashboard Component */}
-      <AccessibilityDashboard userId="demo" />
+      <AccessibilityDashboard />
     </div>
   );
 } 

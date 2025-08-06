@@ -38,6 +38,16 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     setConsent(prev => ({ ...prev, [key]: value }));
   };
 
+  const acceptAllConsent = () => {
+    setConsent({
+      location_tracking: true,
+      motion_sensors: true,
+      data_sharing: true,
+      analytics: true,
+      notifications: true,
+    });
+  };
+
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -264,6 +274,18 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             </p>
           </div>
 
+          <div className="flex justify-center mb-6">
+            <button
+              onClick={acceptAllConsent}
+              className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors shadow-md flex items-center space-x-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Accept All</span>
+            </button>
+          </div>
+
           <div className="space-y-4">
             <div className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
@@ -432,7 +454,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Progress Bar */}
@@ -447,7 +469,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
               />
             </div>
@@ -474,7 +496,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             <button
               onClick={prevStep}
               disabled={currentStep === 0}
-              className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
@@ -482,14 +504,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             {currentStep === steps.length - 1 ? (
               <button
                 onClick={handleComplete}
-                className="px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-md"
               >
                 Get Started
               </button>
             ) : (
               <button
                 onClick={nextStep}
-                className="px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-md"
               >
                 Next
               </button>

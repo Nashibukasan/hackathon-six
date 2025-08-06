@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingFlow from '@/components/OnboardingFlow';
+import { useUser } from '@/contexts/UserContext';
 
 interface ConsentSettings {
   location_tracking: boolean;
@@ -16,29 +17,45 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { login, setCurrentUser } = useUser();
 
   const handleOnboardingComplete = async (consent: ConsentSettings) => {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      // Save consent settings to the database
-      const response = await fetch('/api/users/consent', {
-        method: 'POST',
+      // Get the current user from context
+      const savedUser = localStorage.getItem('currentUser');
+      if (!savedUser) {
+        throw new Error('No user found. Please register first.');
+      }
+
+      const existingUser = JSON.parse(savedUser);
+      const userEmail = existingUser.email;
+      const accessibilityProfile = existingUser.accessibility_profile;
+
+      // Update the user's consent settings and accessibility profile
+      const response = await fetch(`/api/users/${encodeURIComponent(userEmail)}/consent`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           consent_settings: consent,
+          accessibility_profile: accessibilityProfile
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save consent settings');
+        throw new Error('Failed to update user settings');
       }
 
-      // Redirect to profile page to complete setup
-      router.push('/profile');
+      // Update the user in context with new consent settings
+      const updatedUserData = await response.json();
+      setCurrentUser(updatedUserData.data);
+
+      // Redirect to track page
+      router.push('/track');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setIsSubmitting(false);
@@ -61,7 +78,7 @@ export default function OnboardingPage() {
               </div>
               <div className="ml-3">
                 <h3 className="text-lg font-medium text-error-800">
-                  Error Saving Settings
+                  Error Creating Account
                 </h3>
               </div>
             </div>
@@ -71,13 +88,13 @@ export default function OnboardingPage() {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setError(null)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                className="px-4 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
               >
                 Try Again
               </button>
               <button
-                onClick={() => router.push('/profile')}
-                className="px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                onClick={() => router.push('/track')}
+                className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-md"
               >
                 Continue Anyway
               </button>
@@ -91,7 +108,7 @@ export default function OnboardingPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
-            <span className="text-gray-700">Saving your settings...</span>
+            <span className="text-gray-700">Creating your account...</span>
           </div>
         </div>
       )}
